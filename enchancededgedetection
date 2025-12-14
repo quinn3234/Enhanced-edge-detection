@@ -1,0 +1,40 @@
+npm init -y
+npm install sharp opencv4nodejs
+// imageProcessing.js
+const sharp = require("sharp");
+const cv = require("opencv4nodejs");
+
+async function processImage() {
+  const inputPath = "input.jpg";
+
+  try {
+    // ✅ Preprocess: resize and grayscale with Sharp
+    await sharp(inputPath)
+      .resize(400, 400)
+      .grayscale()
+      .toFile("preprocessed.jpg");
+
+    // ✅ Load into OpenCV
+    const img = cv.imread("preprocessed.jpg");
+
+    // ✅ Edge Detection (Canny)
+    const edges = img.canny(100, 200);
+    cv.imwrite("edges.jpg", edges);
+
+    // ✅ Gaussian Blur (noise reduction)
+    const blurred = img.gaussianBlur(new cv.Size(5, 5), 1.5);
+    cv.imwrite("blurred.jpg", blurred);
+
+    // ✅ Sobel Filter (gradient detection)
+    const sobelX = img.sobel(cv.CV_8U, 1, 0, 3);
+    const sobelY = img.sobel(cv.CV_8U, 0, 1, 3);
+    const sobelCombined = sobelX.add(sobelY);
+    cv.imwrite("sobel.jpg", sobelCombined);
+
+    console.log("✅ Processing complete: edges, blurred, sobel filters saved!");
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+processImage();
